@@ -142,8 +142,20 @@ public class DoublyLinkedListImpl<E> {
         Node tmp = tail;
         while (tmp != null) {
             if (tmp.index == index) {
-                tmp.prev.next = tmp.next;
-                tmp.next.prev = tmp.prev;
+                size--;
+                if (index == tail.index) {
+                    tail = tmp.prev;
+                }
+                if (index == head.index) {
+                    head = tmp.next;
+                }
+                if (tmp.prev != null) {
+                    tmp.prev.next = tmp.next;
+                }
+                if (tmp.next != null) {
+                    tmp.next.prev = tmp.prev;
+                }
+
             }
             tmp = tmp.prev;
         }
@@ -229,9 +241,11 @@ public class DoublyLinkedListImpl<E> {
 
         Iterator<Integer> iterator = dll.iterator();
         while (iterator.hasNext()) {
+            iterator.next();
             iterator.remove();
         }
         System.out.println(dll.isEmpty());
+        dll.iterateForward();
     }
 
 }
