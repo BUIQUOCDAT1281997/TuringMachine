@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public class DoublyLinkedListImpl<E> {
@@ -10,20 +13,17 @@ public class DoublyLinkedListImpl<E> {
         size = 0;
     }
 
-    /**
-     * this class keeps track of each element information
-     *
-     * @author java2novice
-     */
     private class Node {
         E element;
         Node next;
         Node prev;
+        int index;
 
         public Node(E element, Node next, Node prev) {
             this.element = element;
             this.next = next;
             this.prev = prev;
+            index = 0;
         }
     }
 
@@ -54,13 +54,13 @@ public class DoublyLinkedListImpl<E> {
         Node tmp = new Node(element, head, null);
         if (head != null) {
             head.prev = tmp;
+            tmp.index = head.index - 1;
         }
         head = tmp;
         if (tail == null) {
             tail = tmp;
         }
         size++;
-        System.out.println("adding: " + element);
     }
 
     /**
@@ -73,13 +73,13 @@ public class DoublyLinkedListImpl<E> {
         Node tmp = new Node(element, null, tail);
         if (tail != null) {
             tail.next = tmp;
+            tmp.index = tail.index + 1;
         }
         tail = tmp;
         if (head == null) {
             head = tmp;
         }
         size++;
-        System.out.println("adding: " + element);
     }
 
     /**
@@ -138,17 +138,100 @@ public class DoublyLinkedListImpl<E> {
         return tmp.element;
     }
 
+    public void remove(int index) {
+        Node tmp = tail;
+        while (tmp != null) {
+            if (tmp.index == index) {
+                tmp.prev.next = tmp.next;
+                tmp.next.prev = tmp.prev;
+            }
+            tmp = tmp.prev;
+        }
+    }
+
+    public E get(int index) {
+        Node tmp = tail;
+        while (tmp != null) {
+            if (tmp.index == index) {
+                return tmp.element;
+            }
+            tmp = tmp.prev;
+        }
+        return null;
+    }
+
+    public void set(int index, E element) {
+        Node tmp = tail;
+        while (tmp != null) {
+            if (tmp.index == index) {
+                tmp.element = element;
+            }
+            tmp = tmp.prev;
+        }
+    }
+
+    public class DoublyLinkedListIterator implements Iterator<E> {
+
+        private Node current = null;
+
+        private int location = 0;
+
+        private List<Node> list;
+
+        private DoublyLinkedListIterator() {
+            list = new ArrayList<>();
+            addToList(head);
+        }
+
+        private void addToList(Node head) {
+            Node tmp = head;
+            while (tmp != null) {
+                list.add(tmp);
+                tmp = tmp.next;
+            }
+        }
+
+        private Node findNext() {
+            return list.get(location++);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return location < list.size();
+        }
+
+        @Override
+        public E next() {
+            current = findNext();
+            if (current == null) throw new NoSuchElementException();
+            return current.element;
+        }
+
+        @Override
+        public void remove() {
+            DoublyLinkedListImpl.this.remove(current.index);
+            list.remove(current);
+            location--;
+        }
+    }
+
+    public Iterator<E> iterator() {
+        return new DoublyLinkedListIterator();
+    }
+
     public static void main(String a[]) {
 
-        DoublyLinkedListImpl<Integer> dll = new DoublyLinkedListImpl<Integer>();
+        DoublyLinkedListImpl<Integer> dll = new DoublyLinkedListImpl<>();
         dll.addFirst(10);
         dll.addFirst(34);
         dll.addLast(56);
         dll.addLast(364);
-        dll.iterateForward();
-        dll.removeFirst();
-        dll.removeLast();
-        dll.iterateBackward();
+
+        Iterator<Integer> iterator = dll.iterator();
+        while (iterator.hasNext()) {
+            iterator.remove();
+        }
+        System.out.println(dll.isEmpty());
     }
 
 }

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class TuringMachine {
@@ -8,8 +9,8 @@ public class TuringMachine {
     private List<String> indexA;
     private List<String> indexS;
 
-    private List<String> tape;
-    private List<String> subTape;
+    private DoublyLinkedListImpl<String> tape;
+
 
     private String[][] table;
 
@@ -28,7 +29,7 @@ public class TuringMachine {
 
         String strTape = br.readLine();
         for (int i = 0; i < strTape.length(); i++) {
-            tape.add(String.valueOf(strTape.charAt(i)));
+            tape.addLast(String.valueOf(strTape.charAt(i)));
         }
 
         String current = br.readLine();
@@ -49,8 +50,7 @@ public class TuringMachine {
 
         indexA = new ArrayList<>();
         indexS = new ArrayList<>();
-        tape = new ArrayList<>();
-        subTape = new ArrayList<>();
+        tape = new DoublyLinkedListImpl<>();
 
         workWithFile(pathName);
 
@@ -89,9 +89,6 @@ public class TuringMachine {
     private void run() throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("output.txt")));
         int pointer = 0;
-        int maxlenghtOfTape = tape.size();
-        int maxlenghtOfSubTape = 0;
-        boolean overflow = false;
 
         int locationOfStatus = 0;
         int locationOfAlphabet;
@@ -101,7 +98,7 @@ public class TuringMachine {
         List<String> currentList;
 
         while (!stop) {
-            locationOfAlphabet = (overflow) ? (indexA.indexOf(subTape.get(pointer))) : (indexA.indexOf(tape.get(pointer)));
+            locationOfAlphabet = indexA.indexOf(tape.get(pointer));
 
             String nextState = table[locationOfAlphabet][locationOfStatus];
 
@@ -111,36 +108,21 @@ public class TuringMachine {
                 currentList = Arrays.asList(nextState.split(","));
 
                 stop = (currentList.get(2).equals("STOP"));
-                if (!overflow) {
-                    tape.set(pointer, currentList.get(0));
-                } else subTape.set(pointer, currentList.get(0));
+
+                tape.set(pointer, currentList.get(0));
 
                 switch (currentList.get(1)) {
                     case "L": {
-                        if (overflow) {
-                            pointer++;
-                            if (pointer > maxlenghtOfSubTape) {
-                                maxlenghtOfSubTape++;
-                                subTape.add("_");
-                            }
-
-                        } else if (pointer == 0) {
-                            overflow = true;
-                            subTape.add("_");
-                        } else pointer--;
+                        pointer--;
+                        if (tape.get(pointer) == null) {
+                            tape.addFirst("_");
+                        }
                         break;
                     }
                     case "R": {
-                        if (!overflow) {
-                            pointer++;
-                            if (pointer > maxlenghtOfTape - 1) {
-                                maxlenghtOfTape++;
-                                tape.add("_");
-                            }
-                        } else if (pointer == 0) {
-                            overflow = false;
-                        } else {
-                            pointer--;
+                        pointer++;
+                        if (tape.get(pointer) == null) {
+                            tape.addLast("_");
                         }
                         break;
                     }
@@ -150,16 +132,12 @@ public class TuringMachine {
 
         }
 
-        StringBuilder result = new StringBuilder();
-
-        for (int i = subTape.size() - 1; i >= 0; i--) {
-            result.append(subTape.get(i));
+        String result = "";
+        Iterator<String> iterator = tape.iterator();
+        while (iterator.hasNext()) {
+            result = result.concat(iterator.next());
         }
-        for (String string : tape) {
-            result.append(string);
-        }
-
-        bw.write(trimString(String.valueOf(result)));
+        bw.write(trimString(result));
         bw.close();
     }
 
