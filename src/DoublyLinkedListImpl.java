@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class DoublyLinkedListImpl<E> {
 
@@ -231,9 +228,19 @@ public class DoublyLinkedListImpl<E> {
         return new DoublyLinkedListIterator();
     }
 
-    public static void main(String a[]) {
+    @Override
+    public String toString() {
+        String result = "";
+        Iterator<E> iterator = this.iterator();
+        while (iterator.hasNext()) {
+            result = result.concat(iterator.next().toString());
+        }
+        return result;
+    }
 
-        DoublyLinkedListImpl<Integer> dll = new DoublyLinkedListImpl<>();
+    public static void main(String a[]) {
+        /*
+         DoublyLinkedListImpl<Integer> dll = new DoublyLinkedListImpl<>();
         dll.addFirst(10);
         dll.addFirst(34);
         dll.addLast(56);
@@ -246,6 +253,11 @@ public class DoublyLinkedListImpl<E> {
         }
         System.out.println(dll.isEmpty());
         dll.iterateForward();
+         */
+
+        HashMap<Integer,Integer> hashMap = new HashMap();
+        hashMap.put(1,2);
+        System.out.println(hashMap.get(2));
     }
 
 }
