@@ -238,26 +238,4 @@ public class DoublyLinkedListImpl<E> {
         return result;
     }
 
-    public static void main(String a[]) {
-        /*
-         DoublyLinkedListImpl<Integer> dll = new DoublyLinkedListImpl<>();
-        dll.addFirst(10);
-        dll.addFirst(34);
-        dll.addLast(56);
-        dll.addLast(364);
-
-        Iterator<Integer> iterator = dll.iterator();
-        while (iterator.hasNext()) {
-            iterator.next();
-            iterator.remove();
-        }
-        System.out.println(dll.isEmpty());
-        dll.iterateForward();
-         */
-
-        HashMap<Integer,Integer> hashMap = new HashMap();
-        hashMap.put(1,2);
-        System.out.println(hashMap.get(2));
-    }
-
 }

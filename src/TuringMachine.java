@@ -6,12 +6,17 @@ public class TuringMachine {
     private List<String> listStatus;
     private DoublyLinkedListImpl<String> tape;
     private HashMap<Pair, String[]> hashMap;
+    private String initialState;
+    private int pointer;
 
-    private void workWithFile(String inputName) throws Exception {
+    private void loadDescription(String inputName) throws Exception {
 
         BufferedReader br = new BufferedReader(new FileReader(new File(inputName)));
 
         String strAlphabet = br.readLine();
+        if (!strAlphabet.matches("(.,)*.")) {
+            throw new Exception("format error");
+        }
         String strStatus = br.readLine();
         if (!strStatus.matches("(.+,)*.+")) {
             throw new Exception("format error");
@@ -19,10 +24,12 @@ public class TuringMachine {
         listAlphabet = Arrays.asList(strAlphabet.split(","));
         listStatus = Arrays.asList(strStatus.split(","));
 
-        String strTape = br.readLine();
-        for (int i = 0; i < strTape.length(); i++) {
-            tape.addLast(String.valueOf(strTape.charAt(i)));
-        }
+        br.close();
+    }
+
+    private void loadCommand(String inputName) throws Exception {
+
+        BufferedReader br = new BufferedReader(new FileReader(new File(inputName)));
 
         String current = br.readLine();
         String[] string;
@@ -47,18 +54,62 @@ public class TuringMachine {
         br.close();
     }
 
-    private TuringMachine(String pathName) throws Exception {
+    private void loadTape(String inputName) throws Exception {
+
+        BufferedReader br = new BufferedReader(new FileReader(new File(inputName)));
+
+        this.pointer = Integer.parseInt(br.readLine());
+        this.initialState = br.readLine();
+        String strTape = br.readLine();
+
+        if (listStatus.indexOf(initialState) == -1) {
+            throw new Exception("This status is not in the list");
+        }
+
+        for (int i = 0; i < strTape.length(); i++) {
+            tape.addLast(String.valueOf(strTape.charAt(i)));
+        }
+        /*
+        if (position < 0 || position >= strTape.length()) {
+            throw new Exception("cursor position error");
+        }
+         */
+        if (pointer < 0) {
+            int count = -1;
+            while (count != pointer) {
+                tape.addFirst("_");
+                count--;
+            }
+            tape.addFirst("_");
+        } else if (pointer >= strTape.length()) {
+            int count = strTape.length();
+            while (count != pointer) {
+                tape.addLast("_");
+                count++;
+            }
+            tape.addLast("_");
+        }
+
+        br.close();
+    }
+
+    public TuringMachine(String command, String input, String alphabet) throws Exception {
         this.listAlphabet = new ArrayList<>();
         this.listStatus = new ArrayList<>();
         this.tape = new DoublyLinkedListImpl<>();
         this.hashMap = new HashMap<>();
 
-        workWithFile(pathName);
+        loadDescription(alphabet);
+        loadCommand(command);
+        loadTape(input);
     }
 
     @Override
     public String toString() {
+        String x = tape.get(pointer);
+        tape.set(pointer, "[" + x + "]");
         String result = tape.toString();
+        tape.set(pointer, x);
         int count1 = 0;
         int count2 = 0;
 
@@ -80,12 +131,12 @@ public class TuringMachine {
         return result.substring(count1, result.length() - count2);
     }
 
-    private void run() throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("output.txt")));
+    public void run() throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("process.txt")));
+        BufferedWriter bw2 = new BufferedWriter(new FileWriter(new File("result.txt")));
 
-        int pointer = 0;
         boolean stop = false;
-        Pair<String, String> currentPair = new Pair<>(listStatus.get(0), tape.get(pointer));
+        Pair<String, String> currentPair = new Pair<>(initialState, tape.get(pointer));
         while (!stop) {
             String[] nextState = hashMap.get(currentPair);
             bw.write("command : " + Arrays.toString(nextState));
@@ -93,6 +144,7 @@ public class TuringMachine {
 
             if (nextState == null) {
                 stop = true;
+                System.out.println("khong du trang thai");
             } else {
                 stop = (nextState[4].equals("STOP"));
                 tape.set(pointer, nextState[2]);
@@ -119,13 +171,15 @@ public class TuringMachine {
             currentPair = new Pair<>(nextState[4], tape.get(pointer));
         }
 
-        bw.write("RESULT : " + this.toString());
+        bw2.write("RESULT : " + this.toString());
         bw.close();
+        bw2.close();
     }
 
     public static void main(String[] args) {
         try {
-            TuringMachine turingMachine = new TuringMachine("input.txt");
+            TuringMachine turingMachine = new TuringMachine("command.txt",
+                    "input.txt", "alphabet.txt");
             turingMachine.run();
         } catch (Exception e) {
             e.printStackTrace();
